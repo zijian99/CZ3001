@@ -19,3 +19,7 @@
 ##### Lab 4
 - Understand the working of the 5-stage pipelined datapath and simulate the CBZ and B instructions along with the previous R-type and D-type instructions
 - Understand the effect of control hazard and eliminate them for the correct result in pipeline
+
+##### Lab 5
+- Write basic CUDA programs
+- Make use of GPU to solve problem based on parallelism using multi-threading.
