@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <iostream>
+#include <stdlib.h>
+
+__global__ void vector_add(int *d_c, int *d_a, int *d_b, int n) {
+	for (int i=0; i<n; i++) {
+		d_c[i] = d_a[i] + d_b[i];
+	}
+}
+
+void print_output(int *d_c, int *d_a, int *d_b, int N) {
+	printf("\nA=");
+	for (int idx=0; idx<N; idx++) {
+		printf(" %d ", d_a[idx]);
+	}
+	printf("\nB=");
+	for (int idx=0; idx<N; idx++) {
+		printf(" %d ", d_b[idx]);
+	}
+	printf("\nC=");
+	for (int idx=0; idx<N; idx++) {
+		printf(" %d ", d_c[idx]);
+	}
+	printf("\n");
+}
+
+int main(void) {
+	int N=4; 
+	int a[N] = {22, 13, 16, 5};
+	int b[N] = {5, 22, 17, 37};
+	int c[N];
+
+	int *d_a, *d_b, *d_c;
+
+	cudaMalloc((void**) &d_a, sizeof(int)*N);
+	cudaMalloc((void**) &d_b, sizeof(int)*N);
+	cudaMalloc((void**) &d_c, sizeof(int)*N);
+
+	cudaMemcpy(d_a, a, sizeof(int)*N, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_b, b, sizeof(int)*N, cudaMemcpyHostToDevice);
+
+	vector_add<<<1,4>>>(d_c, d_a, d_b, N); // note: thread
+
+	cudaMemcpy(c, d_c, sizeof(int)*N, cudaMemcpyDeviceToHost);
+
+	print_output(c, a, b, N);
+
+	cudaFree(d_a);
+	cudaFree(d_b);
+	cudaFree(d_c);
+
+	return 0;
+}
+// to compile: nvcc file_name.cu -o filename 
+// to run: ./filename

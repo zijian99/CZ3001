@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <iostream>
+
+__global__ void dot_product(int *d_c, int *d_a, int *d_b) {
+	__shared__ int tmp[3];
+	int i = threadIdx.x;
+	tmp[i] = d_a[i] * d_b[i];
+	__syncthreads();
+
+	if (i==0) {
+		int sum = 0;
+		for (int j=0; j<4; j++) {
+			sum = sum + tmp[j];
+		}
+		*d_c = sum;
+	}
+}
+
+void print_output(int *d_c, int *d_a, int *d_b, int N) {
+	printf("\nA=");
+	for (int idx=0; idx<N; idx++) {
+		printf(" %d ", d_a[idx]);
+	}
+	printf("\nB=");
+	for (int idx=0; idx<N; idx++) {
+		printf(" %d ", d_b[idx]);
+	}
+	printf("\nC=");
+	printf(" %d ", d_c[0]);
+	printf("\n");
+}
+
+int main(void) {
+	int N=4; 
+	int a[N] = {22, 13, 16, 5};
+	int b[N] = {5, 22, 17, 37};
+	int c[N];
+
+	int *d_a, *d_b, *d_c;
+
+	cudaMalloc((void**) &d_a, sizeof(int)*N);
+	cudaMalloc((void**) &d_b, sizeof(int)*N);
+	cudaMalloc((void**) &d_c, sizeof(int)*N);
+
+	cudaMemcpy(d_a, a, sizeof(int)*N, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_b, b, sizeof(int)*N, cudaMemcpyHostToDevice);
+
+	dot_product<<<1,4>>>(d_c, d_a, d_b); // note: thread
+
+	cudaMemcpy(c, d_c, sizeof(int)*N, cudaMemcpyDeviceToHost);
+
+	print_output(c, a, b, N);
+
+	cudaFree(d_a);
+	cudaFree(d_b);
+	cudaFree(d_c);
+
+	return 0;
+}
+// to compile: nvcc file_name.cu -o filename 
+// to run: ./filename

@@ -1,0 +1,22 @@
+#include <stdio.h>
+#include <iostream>
+
+__global__ void hello_GPU1(void) {
+	int i = threadIdx.x;
+	printf("Hello from GPU1[%d]!\n", i);
+}
+
+__global__ void hello_GPU2(void) {
+	int i = threadIdx.x;
+	printf("Hello from GPU2[%d]!\n", i);
+}
+
+int main(void) {
+	printf("Hello from CPU!\n");
+	hello_GPU1<<<1,4>>>();
+	hello_GPU2<<<1,6>>>();
+	cudaDeviceSynchronize();
+	return 0;
+}
+// to compile: nvcc file_name.cu -o filename 
+// to run: ./filename
